@@ -11,8 +11,10 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const input = schema.parse(await req.json());
+  const email = input.email.toLowerCase().trim();
+  const organisationSlug = input.organisationSlug?.trim().toLowerCase();
   const user = await prisma.user.findUnique({
-    where: { email: input.email.toLowerCase() },
+    where: { email },
     include: {
       memberships: {
         include: { organisation: true },
@@ -30,9 +32,9 @@ export async function POST(req: NextRequest) {
   }
 
   let membership = user.memberships.find((item) => item.isPrimary) ?? user.memberships[0] ?? null;
-  if (input.organisationSlug) {
+  if (organisationSlug) {
     membership =
-      user.memberships.find((item) => item.organisation.slug === input.organisationSlug) ?? membership;
+      user.memberships.find((item) => item.organisation.slug === organisationSlug) ?? membership;
   }
 
   const token = signSession({

@@ -20,3 +20,12 @@ export function toISODate(date: Date | string) {
 export function makeCode(prefix: string, index: number) {
   return `${prefix}-${String(index).padStart(4, "0")}`;
 }
+
+export function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-+|-+$/g, "");
+}

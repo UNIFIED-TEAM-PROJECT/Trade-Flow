@@ -16,8 +16,8 @@ type LoginResponse = {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("owner@demo.tradesflow");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,7 +82,13 @@ export default function LoginPage() {
           <form className="space-y-4" onSubmit={handleSubmit}>
             <label className="space-y-1 text-sm text-slate-700">
               <span>Email</span>
-              <Input value={email} onChange={(event) => setEmail(event.target.value)} type="email" required />
+              <Input
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                type="email"
+                autoComplete="email"
+                required
+              />
             </label>
             <label className="space-y-1 text-sm text-slate-700">
               <span>Password</span>
