@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tradesflow-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tradesflow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tradesflow-app
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      JWT_SECRET: replace-with-a-long-random-secret
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/tradesflow?schema=public
+      CAP_SERVER_URL: http://10.0.2.2:3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - uploads_data:/app/uploads
+    command: >
+      sh -c "npx prisma migrate deploy &&
+             npm run db:seed &&
+             npm start"
+
+volumes:
+  postgres_data:
+  uploads_data:

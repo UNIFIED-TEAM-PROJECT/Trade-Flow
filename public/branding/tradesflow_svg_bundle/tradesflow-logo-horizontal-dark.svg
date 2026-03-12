@@ -1,0 +1,17 @@
+<svg width="1600" height="400" viewBox="0 0 1600 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TradesFlow logo horizontal dark">
+  <defs>
+    <linearGradient id="tfBlue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4BB1FF"/>
+      <stop offset="100%" stop-color="#2D7FF9"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="400" fill="#0B1F33"/>
+  <g transform="translate(120,65)">
+    <path d="M25 30C25 13.43 38.43 0 55 0H250C261.05 0 270 8.95 270 20V45C270 56.05 261.05 65 250 65H131C112.22 65 97 80.22 97 99V112H55C38.43 112 25 98.57 25 82V30Z" fill="url(#tfBlue)"/>
+    <path d="M97 112C97 84.39 119.39 62 147 62H231C242.05 62 251 70.95 251 82V104C251 115.05 242.05 124 231 124H158C139.22 124 124 139.22 124 158V173H97C85.95 173 77 164.05 77 153V132C77 120.95 85.95 112 97 112Z" fill="url(#tfBlue)"/>
+    <rect x="148" y="102" width="14" height="49" rx="7" fill="#79C3FF"/>
+    <path d="M84 174H124V230C124 241.05 115.05 250 104 250H76C64.95 250 56 241.05 56 230V202C56 186.54 68.54 174 84 174Z" fill="url(#tfBlue)"/>
+    <path d="M127 173H167V230C167 272.53 132.53 307 90 307H74C62.95 307 54 298.05 54 287V264H90C110.43 264 127 247.43 127 227V173Z" fill="url(#tfBlue)" opacity="0.96"/>
+  </g>
+  <text x="440" y="230" font-family="Inter, Arial, Helvetica, sans-serif" font-size="126" font-weight="800" fill="#FFFFFF">TradesFlow</text>
+</svg>

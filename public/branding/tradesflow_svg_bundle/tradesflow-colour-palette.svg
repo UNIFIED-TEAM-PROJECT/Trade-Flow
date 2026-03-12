@@ -1,0 +1,31 @@
+<svg width="1600" height="500" viewBox="0 0 1600 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TradesFlow colour palette">
+  <rect width="1600" height="500" fill="#FFFFFF"/>
+  <text x="80" y="90" font-family="Inter, Arial, Helvetica, sans-serif" font-size="48" font-weight="800" fill="#0B1F33">TradesFlow Colour Palette</text>
+  <g transform="translate(80,150)">
+    <g>
+      <rect width="240" height="180" rx="22" fill="#0B1F33"/>
+      <text x="0" y="230" font-family="Inter, Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#0B1F33">Deep Navy</text>
+      <text x="0" y="268" font-family="Inter, Arial, Helvetica, sans-serif" font-size="24" fill="#4B5563">#0B1F33</text>
+    </g>
+    <g transform="translate(280,0)">
+      <rect width="240" height="180" rx="22" fill="#2D7FF9"/>
+      <text x="0" y="230" font-family="Inter, Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#0B1F33">Electric Blue</text>
+      <text x="0" y="268" font-family="Inter, Arial, Helvetica, sans-serif" font-size="24" fill="#4B5563">#2D7FF9</text>
+    </g>
+    <g transform="translate(560,0)">
+      <rect width="240" height="180" rx="22" fill="#FF7A00"/>
+      <text x="0" y="230" font-family="Inter, Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#0B1F33">Construction Orange</text>
+      <text x="0" y="268" font-family="Inter, Arial, Helvetica, sans-serif" font-size="24" fill="#4B5563">#FF7A00</text>
+    </g>
+    <g transform="translate(840,0)">
+      <rect width="240" height="180" rx="22" fill="#4B5563"/>
+      <text x="0" y="230" font-family="Inter, Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#0B1F33">Steel Grey</text>
+      <text x="0" y="268" font-family="Inter, Arial, Helvetica, sans-serif" font-size="24" fill="#4B5563">#4B5563</text>
+    </g>
+    <g transform="translate(1120,0)">
+      <rect width="240" height="180" rx="22" fill="#F4F6F8" stroke="#DDE3E8"/>
+      <text x="0" y="230" font-family="Inter, Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#0B1F33">Light Grey</text>
+      <text x="0" y="268" font-family="Inter, Arial, Helvetica, sans-serif" font-size="24" fill="#4B5563">#F4F6F8</text>
+    </g>
+  </g>
+</svg>

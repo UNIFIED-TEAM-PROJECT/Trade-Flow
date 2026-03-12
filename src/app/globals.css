@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --tf-navy: 10, 26, 51;
+  --tf-electric: 14, 165, 233;
+  --tf-orange: 249, 115, 22;
+}
+
+body {
+  @apply font-body bg-slate-50 text-slate-900 antialiased;
+}
+
+@layer utilities {
+  .bg-noise {
+    background-image: radial-gradient(rgba(15, 23, 42, 0.05) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+
+  .bg-hero {
+    background-image: linear-gradient(
+      128deg,
+      rgba(var(--tf-navy), 0.96) 0%,
+      rgba(var(--tf-navy), 0.92) 45%,
+      rgba(var(--tf-electric), 0.7) 100%
+    );
+  }
+
+  .glass {
+    @apply border border-white/20 bg-white/10 backdrop-blur-xl;
+  }
+}
