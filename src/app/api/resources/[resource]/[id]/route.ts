@@ -12,6 +12,18 @@ function getRoleScope(resource: string, ctx: { role?: MembershipRole; userId: st
     if (resource === "jobs" || resource === "properties" || resource === "estimates" || resource === "invoices") {
       return { customer: { userId: ctx.userId } };
     }
+    if (resource === "job-requests") {
+      return { customer: { userId: ctx.userId } };
+    }
+    if (resource === "property-assets") {
+      return { customer: { userId: ctx.userId } };
+    }
+    if (resource === "asset-documents" || resource === "asset-photos" || resource === "asset-status-history") {
+      return { asset: { customer: { userId: ctx.userId } } };
+    }
+    if (resource === "products" || resource === "product-categories") {
+      return {};
+    }
     if (resource === "subscriptions") {
       return { customer: { userId: ctx.userId } };
     }
@@ -30,6 +42,9 @@ function getRoleScope(resource: string, ctx: { role?: MembershipRole; userId: st
     }
     if (resource === "chat-threads") {
       return { participants: { some: { userId: ctx.userId } } };
+    }
+    if (resource === "job-requests") {
+      return {};
     }
   }
 

@@ -1,11 +1,16 @@
 import { JobOperationsPanel } from "@/components/modules/job-operations";
 import { PageHeading } from "@/components/modules/page-heading";
 import { ResourceManager } from "@/components/modules/resource-manager";
+import { TechnicianJobExecution } from "@/components/modules/technician-job-execution";
 
 export default function TechnicianJobsPage() {
   return (
     <div className="space-y-4">
-      <PageHeading title="Job Actions" description="Start, complete, and update assigned jobs from the field." />
+      <PageHeading
+        title="Technician Execution Flow"
+        description="Travel start, on-site work, material usage, photo capture placeholders, and completion handoff."
+      />
+      <TechnicianJobExecution />
       <JobOperationsPanel />
       <ResourceManager
         title="My Jobs"

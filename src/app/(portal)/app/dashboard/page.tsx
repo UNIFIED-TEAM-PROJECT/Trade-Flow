@@ -55,7 +55,7 @@ export default async function DashboardPage() {
       <div className="grid gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>Revenue and Activity Trend</CardTitle>
+            <CardTitle className="text-white">Revenue and Activity Trend</CardTitle>
           </CardHeader>
           <CardContent>
             <TrendChart data={analytics.trend.slice(-20)} />
@@ -63,14 +63,14 @@ export default async function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Fleet Overview</CardTitle>
+            <CardTitle className="text-white">Fleet Overview</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {vans.map((van) => (
-              <div key={van.id} className="flex items-center justify-between rounded-lg border border-slate-200 p-2">
+              <div key={van.id} className="flex items-center justify-between rounded-lg border border-white/10 p-2">
                 <div>
-                  <p className="text-sm font-medium">{van.name}</p>
-                  <p className="text-xs text-slate-500">{van.currentLocationLabel ?? "Location pending"}</p>
+                  <p className="text-sm font-medium text-white">{van.name}</p>
+                  <p className="text-xs text-slate-400">{van.currentLocationLabel ?? "Location pending"}</p>
                 </div>
                 <Badge variant={van.status === "ACTIVE" ? "success" : "warning"}>{van.status}</Badge>
               </div>
@@ -82,31 +82,31 @@ export default async function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Low Stock Alerts</CardTitle>
+            <CardTitle className="text-white">Low Stock Alerts</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {flaggedItems.slice(0, 10).map((item) => (
-              <div key={item.name} className="flex items-center justify-between rounded-lg bg-slate-50 p-2 text-sm">
-                <span>{item.name}</span>
+              <div key={item.name} className="flex items-center justify-between rounded-lg bg-slate-900/60 p-2 text-sm">
+                <span className="text-slate-200">{item.name}</span>
                 <span className="font-medium text-red-600">
                   {item.quantity} / reorder {item.reorderLevel}
                 </span>
               </div>
             ))}
             {flaggedItems.length === 0 ? (
-              <p className="text-sm text-slate-500">No low stock alerts right now.</p>
+              <p className="text-sm text-slate-400">No low stock alerts right now.</p>
             ) : null}
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Job Status Snapshot</CardTitle>
+            <CardTitle className="text-white">Job Status Snapshot</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-2 text-sm">
             {Object.entries(analytics.jobsByStatus).map(([status, value]) => (
-              <div key={status} className="flex items-center justify-between rounded-lg border border-slate-100 p-2">
-                <span className="text-slate-600">{status.replaceAll("_", " ")}</span>
-                <span className="font-semibold">{value}</span>
+              <div key={status} className="flex items-center justify-between rounded-lg border border-white/10 p-2">
+                <span className="text-slate-300">{status.replaceAll("_", " ")}</span>
+                <span className="font-semibold text-white">{value}</span>
               </div>
             ))}
           </CardContent>

@@ -28,14 +28,12 @@ services:
       JWT_SECRET: replace-with-a-long-random-secret
       DATABASE_URL: postgresql://postgres:postgres@db:5432/tradesflow?schema=public
       CAP_SERVER_URL: http://10.0.2.2:3000
+      RUN_DB_SEED: "true"
     ports:
       - "3000:3000"
     volumes:
       - uploads_data:/app/uploads
-    command: >
-      sh -c "npx prisma migrate deploy &&
-             npm run db:seed &&
-             npm start"
+    command: sh scripts/start.sh
 
 volumes:
   postgres_data:

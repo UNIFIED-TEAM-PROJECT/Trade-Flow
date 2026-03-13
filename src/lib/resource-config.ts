@@ -40,6 +40,13 @@ export const RESOURCE_CONFIG: Record<string, ResourceConfig> = {
     writeRoles: ADMIN_ROLES,
     searchFields: ["name", "registration", "identifier"],
   },
+  depots: {
+    model: "depot",
+    tenantScoped: true,
+    readRoles: OPERATOR_ROLES,
+    writeRoles: ADMIN_ROLES,
+    searchFields: ["name", "code", "city", "postcode"],
+  },
   racks: {
     model: "rack",
     tenantScoped: true,
@@ -88,6 +95,24 @@ export const RESOURCE_CONFIG: Record<string, ResourceConfig> = {
       van: true,
     },
   },
+  "job-requests": {
+    model: "jobRequest",
+    tenantScoped: true,
+    readRoles: ALL_APP_ROLES,
+    writeRoles: ALL_APP_ROLES,
+    searchFields: ["title", "serviceType", "description"],
+    include: {
+      customer: true,
+      property: true,
+      linkedJob: true,
+      selectedProducts: {
+        include: {
+          product: true,
+        },
+      },
+    },
+    orderBy: { requestedAt: "desc" },
+  },
   "job-materials": {
     model: "jobMaterial",
     tenantScoped: true,
@@ -121,6 +146,91 @@ export const RESOURCE_CONFIG: Record<string, ResourceConfig> = {
     readRoles: ALL_APP_ROLES,
     writeRoles: OPERATOR_ROLES,
     searchFields: ["notes"],
+  },
+  "product-categories": {
+    model: "productCategory",
+    tenantScoped: true,
+    readRoles: ALL_APP_ROLES,
+    writeRoles: ADMIN_ROLES,
+    searchFields: ["name", "slug", "description"],
+  },
+  products: {
+    model: "product",
+    tenantScoped: true,
+    readRoles: ALL_APP_ROLES,
+    writeRoles: ADMIN_ROLES,
+    searchFields: ["name", "slug", "brand", "model", "description"],
+    include: {
+      category: true,
+      sources: true,
+    },
+  },
+  "product-sources": {
+    model: "productSource",
+    tenantScoped: true,
+    readRoles: OPERATOR_ROLES,
+    writeRoles: ADMIN_ROLES,
+    searchFields: ["supplierName", "supplierSku", "supplierUrl"],
+    include: {
+      product: true,
+      supplier: true,
+    },
+  },
+  "markup-rules": {
+    model: "companyMarkupRule",
+    tenantScoped: true,
+    readRoles: OPERATOR_ROLES,
+    writeRoles: ADMIN_ROLES,
+    searchFields: ["ruleName", "roundingRule"],
+    include: {
+      category: true,
+      product: true,
+    },
+  },
+  "property-assets": {
+    model: "propertyAsset",
+    tenantScoped: true,
+    readRoles: ALL_APP_ROLES,
+    writeRoles: OPERATOR_ROLES,
+    searchFields: ["name", "assetType", "category", "supplierName", "room", "zone"],
+    include: {
+      property: true,
+      customer: true,
+      product: true,
+      installedBy: true,
+      installedJob: true,
+    },
+  },
+  "asset-documents": {
+    model: "assetDocument",
+    tenantScoped: true,
+    readRoles: ALL_APP_ROLES,
+    writeRoles: OPERATOR_ROLES,
+    include: {
+      asset: true,
+      uploadedBy: true,
+    },
+  },
+  "asset-photos": {
+    model: "assetPhoto",
+    tenantScoped: true,
+    readRoles: ALL_APP_ROLES,
+    writeRoles: OPERATOR_ROLES,
+    include: {
+      asset: true,
+      uploadedBy: true,
+    },
+  },
+  "asset-status-history": {
+    model: "assetStatusHistory",
+    tenantScoped: true,
+    readRoles: ALL_APP_ROLES,
+    writeRoles: OPERATOR_ROLES,
+    include: {
+      asset: true,
+      changedBy: true,
+    },
+    orderBy: { createdAt: "desc" },
   },
   "chat-threads": {
     model: "chatThread",

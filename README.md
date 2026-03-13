@@ -1,181 +1,274 @@
 # TradesFlow MVP
 
-Production-minded MVP of **TradesFlow**: a multi-tenant field service operating system for contractor businesses.
+Production-minded MVP for a multi-tenant field service operating system serving trades businesses.
 
-This repository includes:
-- Next.js 14 App Router web app (admin/manager dashboard, technician workspace, customer portal)
-- TypeScript backend APIs in Next route handlers
-- PostgreSQL + Prisma schema/migrations + seed data
-- JWT auth with role-based access control and tenancy scoping
-- Inventory racks/slots/items with scan-to-deduct flow
-- Jobs, estimates, invoices, subscriptions, chat, accounting/VAT, analytics, AI triage stub
-- Local file upload abstraction
-- Docker + docker-compose for test server deployment
-- Capacitor config + Android build path for APK packaging
+## Product Scope
 
-## 1. Tech Stack
-- Frontend: Next.js 14, TypeScript, Tailwind CSS, React Query, Zustand
-- Backend: Next.js API routes, Prisma ORM
-- Database: PostgreSQL
-- Auth: JWT cookie auth (role + organisation context)
-- Mobile: responsive UI + Capacitor integration
+TradesFlow includes:
+- Multi-tenant contractor platform
+- Role-based auth (platform admin, owner, manager, technician, customer)
+- Dispatch Centre with incoming request triage and assignment flow
+- Job lifecycle management (request -> estimate -> schedule -> complete -> invoice)
+- Fleet + van tracking (OpenStreetMap + Leaflet)
+- Depot + van inventory with rack/slot structure
+- Stock movement logging (job issue, restock, transfer, return, damaged/lost, audit)
+- Van readiness scoring for dispatch
+- Estimates + invoices + payment status flow
+- Subscription/protection plans with SLA states
+- Customer/company/technician in-app chat
+- Accounting + VAT summaries and export stub
+- Marketplace catalogue + markup engine
+- Property asset register and asset lifecycle actions
+- PWA-ready frontend + Capacitor Android scaffolding for APK builds
 
-## 2. Roles
-- Platform Super Admin
-- Contractor Company Owner
-- Company Manager / Dispatcher
-- Technician / Engineer
-- Customer / Homeowner / Landlord
+## Tech Stack
 
-Role checks are enforced in API routes and route-level UI access.
+- Next.js 14 (App Router) + TypeScript
+- Tailwind CSS + shadcn-style component architecture
+- TanStack Query
+- Prisma ORM
+- PostgreSQL
+- JWT auth with role + org context enforcement
+- OpenStreetMap + Leaflet
+- Capacitor (Android project scaffolding included)
 
-## 3. Multi-Tenant Isolation
-Most domain tables are tenant scoped via `organisationId`.  
-API resource handlers automatically enforce tenant filters for non-super-admin users.
+## Repository Structure
 
-## 4. Feature Modules Included
-- Auth + signup + password reset + invite acceptance
-- Organisation profile + contractor white-label branding
-- Jobs lifecycle with status history
-- Customer/property records
-- Fleet (vans) + racks + slots
-- Inventory + stock movements + code-based deduction
-- Estimates + approvals
-- Invoices + mock payment updates
-- Subscription plans + customer subscriptions
-- Chat threads + messages
-- Accounting + ledger + VAT periods + HMRC export stub
-- Analytics overview + trend charts
-- AI assistant deterministic triage service
-- Attachments/file upload route
-
-## 5. Repository Structure
 ```text
-prisma/
-  schema.prisma
-  seed.ts
-  migrations/
-src/
-  app/
-    (portal)/app/...         # owner/manager/dispatcher portal
-    (technician)/technician/...  # technician mobile workspace
-    (customer)/customer/...      # customer portal
-    api/...                   # all backend APIs
-  components/
-  lib/
-Dockerfile
-docker-compose.yml
-capacitor.config.ts
-.env.example
-scripts/deploy-ubuntu.sh
+.
+|-- src/
+|   |-- app/
+|   |   |-- (portal)/app/...             # Owner/manager/dispatcher app
+|   |   |-- (technician)/technician/...  # Technician mobile workspace
+|   |   |-- (customer)/customer/...      # Customer portal/app
+|   |   `-- api/...                      # API routes
+|   |-- components/
+|   |   |-- layout/
+|   |   |-- modules/                     # Dispatch, inventory, marketplace, assets, maps
+|   |   `-- ui/
+|   `-- lib/                             # Auth, RBAC, ops/readiness, analytics, db
+|-- prisma/
+|   |-- schema.prisma
+|   |-- seed.ts
+|   `-- migrations/
+|-- android/                             # Capacitor Android project
+|-- public/
+|-- scripts/start.sh                     # Safe production start script
+|-- Dockerfile
+|-- docker-compose.yml
+`-- render.yaml
 ```
 
-## 6. Local Run (without Docker)
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Copy env:
-   ```bash
-   cp .env.example .env
-   ```
-3. Start PostgreSQL (local) and ensure `DATABASE_URL` is correct.
-4. Run migrations + seed:
-   ```bash
-   npx prisma migrate deploy
-   npm run db:seed
-   ```
-5. Start app:
-   ```bash
-   npm run dev
-   ```
-6. Open:
-   - App: `http://localhost:3000`
-   - Health check: `http://localhost:3000/api/health`
+## Local Setup
 
-## 7. Docker Deployment (quick test server)
+### Option A: Docker (fastest)
+
 ```bash
 docker compose up --build
 ```
 
-This starts:
-- `tradesflow-db` (PostgreSQL)
-- `tradesflow-app` (Next.js app)
+Services:
+- App: `http://localhost:3000`
+- Postgres: `localhost:5432`
 
-The app container runs:
-- `prisma migrate deploy`
-- `npm run db:seed`
-- `npm start`
+`docker-compose.yml` sets `RUN_DB_SEED=true`, so demo data is seeded automatically for local demo runs.
 
-## 8. Demo Accounts (Seeded)
-Password for seeded users: `password123`
+### Option B: Native Node + Postgres
 
+1. Install dependencies
+```bash
+npm ci
+```
+
+2. Copy env and update values
+```bash
+cp .env.example .env
+```
+
+3. Apply migrations and seed
+```bash
+npx prisma migrate dev --name init
+npm run db:seed
+```
+
+4. Run app
+```bash
+npm run dev
+```
+
+5. Production build check
+```bash
+npm run build
+npm run start
+```
+
+## Environment Variables
+
+Use `.env.example` as baseline.
+
+Required:
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `NEXT_PUBLIC_APP_URL`
+
+Optional:
+- `CAP_SERVER_URL` (Capacitor dev webview URL)
+- `RUN_DB_SEED` (`true|false`, respected by `scripts/start.sh`)
+
+## Demo Accounts
+
+Shared password for seeded demo users: `password123`
+
+Primary org (`Carlisle Plumbing & Heating Ltd`):
 - `owner@demo.tradesflow`
 - `manager@demo.tradesflow`
 - `tech1@demo.tradesflow`
 - `tech2@demo.tradesflow`
 - `tech3@demo.tradesflow`
 - `customer1@demo.tradesflow`
-- `admin@tradesflow.co.uk` (platform super admin)
 
-## 9. Seeded Demo Data
-- 2 organisations (tenant separation)
-- 1 owner + 1 manager + 3 technicians
-- 3 vans + full rack/slot layout
-- 30+ inventory items
-- 20+ customers and properties
-- 20+ jobs across statuses
-- 10+ estimates
-- 10+ invoices
-- 5+ active subscriptions
-- 10+ expenses/receipts
-- 10+ chat threads/messages
-- analytics snapshots, VAT periods, ledger entries, AI interactions
+Platform admin:
+- `admin@tradesflow.co.uk`
 
-## 10. API Highlights
-- Auth: `/api/auth/*`
-- Generic tenant CRUD: `/api/resources/[resource]`
-- Jobs status: `/api/jobs/[id]/status`
-- Inventory usage: `/api/inventory/use`
-- Estimate decision: `/api/estimates/[id]/respond`
-- Invoice payment: `/api/invoices/[id]/mark-paid`
-- Chat messages: `/api/chat/threads/[threadId]/messages`
-- Dashboard: `/api/dashboard/overview`
-- Analytics: `/api/analytics/overview`
-- Accounting: `/api/accounting/overview`, `/api/accounting/vat-export`
-- AI triage: `/api/ai/triage`
-- File upload: `/api/files/upload`
+Secondary org (`West Coast Trade Services Ltd`):
+- `owner@westcoast.demo`
+- `manager@westcoast.demo`
+- `tech@westcoast.demo`
+- `customer@westcoast.demo`
 
-## 11. APK / Mobile Build Path (Capacitor)
-This MVP is set up for Capacitor webview packaging.
+## Seed Coverage
 
-1. Ensure app is reachable (dev or deployed URL), e.g. `http://10.0.2.2:3000` for Android emulator.
-2. Set `CAP_SERVER_URL` in `.env`.
-3. Initialize and sync:
-   ```bash
-   npm run cap:init
-   npx cap add android
-   npm run cap:sync
-   ```
-4. Open Android project:
-   ```bash
-   npx cap open android
-   ```
-5. Build APK from Android Studio (`Build > Build Bundle(s) / APK(s)`).
+Seed data includes:
+- 2 organisations (multi-tenancy validation)
+- 20+ customers
+- 25+ properties
+- 25 jobs across lifecycle states
+- 10+ incoming requests including emergencies
+- 10 estimates + 10 invoices
+- 5+ active subscriptions + cancelled/lapsed examples
+- 3 vans + depots + route/location history
+- 30+ inventory lines across depot and vans
+- stock movements for all core movement types
+- marketplace categories/products/supplier sources
+- installed property assets + lifecycle history
+- chat threads/messages
+- accounting, receipts, ledger entries, VAT periods
+- analytics snapshots
 
-## 12. Ubuntu VPS Notes
-- Helper script: `scripts/deploy-ubuntu.sh`
-- Add Nginx reverse proxy to `127.0.0.1:3000`
-- Enable TLS using Certbot:
-  - `sudo certbot --nginx -d tradesflow.co.uk`
+## Key Workflow Modules
 
-## 13. Architecture Summary
-- **App router + role portals**: owner/manager, technician, and customer workflows each get dedicated UX routes.
-- **Auth model**: JWT cookie stores user + selected org + role; APIs validate membership on every write.
-- **Domain model**: Prisma schema includes all major entities for jobs, fleet, inventory, finance, subscriptions, chat, analytics, AI logs, and audit.
-- **Scalability**: service abstractions (`lib/ai`, `lib/analytics`, `lib/accounting`, `lib/storage`) isolate provider integrations for future upgrades.
+### Dispatch Centre
+- Incoming queue
+- Emergency queue
+- SLA risk queue
+- Ready-to-schedule queue
+- Technician availability
+- Van readiness and stock fit
+- Assignment wizard
 
-## 14. Assumptions
-- Mock payment and HMRC submission are intentionally internal stubs for MVP.
-- QR scanning currently supports manual code entry + generated QR labels; camera-native scanning is prepared for future integration.
-- Map/routing is placeholder logic using stored coordinates and proximity rules (no paid API dependency).
+### Inventory Logistics
+- Depot inventory + van inventory
+- Rack/slot layout
+- Movement logging endpoints
+- Job-linked deductions
+- Depot-to-van and van-to-van transfer support
+
+### Marketplace + Assets
+- Contractor product catalogue with markup calculations
+- Planned works product selection on requests
+- Installed-product-to-property-asset conversion
+- Asset warranty and replacement tracking
+
+## API Areas
+
+Representative route groups:
+- `/api/auth/*`
+- `/api/customer/*`
+- `/api/ops/dispatch/*`
+- `/api/ops/incoming-jobs`
+- `/api/ops/jobs/[id]/review`
+- `/api/ops/jobs/[id]/assign`
+- `/api/ops/inventory/*`
+- `/api/ops/marketplace/catalog`
+- `/api/ops/assets/overview`
+- `/api/resources/[resource]` (RBAC-enforced CRUD surface)
+
+## Render Deployment
+
+`render.yaml` is included and ready.
+
+### Recommended deploy flow (branch-safe)
+
+1. Push this branch (not `main`) to GitHub.
+2. In Render service settings, set deploy branch to this branch.
+3. Ensure env vars are configured:
+   - `DATABASE_URL` (from Render Postgres)
+   - `JWT_SECRET`
+   - `NEXT_PUBLIC_APP_URL`
+   - `RUN_DB_SEED` (`true` for first deploy only, then set to `false`)
+4. Deploy.
+
+Start command used:
+```bash
+sh scripts/start.sh
+```
+
+This script:
+- runs `prisma migrate deploy`
+- runs seed only if `RUN_DB_SEED=true`
+- starts Next.js
+
+### Render one-time seeding note
+
+To avoid resetting data on every restart:
+- first deployment: set `RUN_DB_SEED=true`
+- after successful seed + login check: set `RUN_DB_SEED=false` and redeploy
+
+## Ubuntu VPS Deployment (Docker)
+
+1. Install Docker + Compose plugin
+2. Copy repo to server
+3. Create `.env` with production values
+4. Start:
+```bash
+docker compose up -d --build
+```
+5. Put Nginx/Caddy in front of `:3000`
+6. Configure HTTPS (Let's Encrypt)
+
+## APK Build (Capacitor)
+
+Prerequisites:
+- Android Studio + SDK
+- Java 17+
+
+Steps:
+
+```bash
+npm ci
+npm run build
+npx cap sync android
+npx cap open android
+```
+
+In Android Studio:
+- Build > Build Bundle(s)/APK(s) > Build APK(s)
+
+For local webview development:
+- set `CAP_SERVER_URL` in `.env`
+- run `npm run dev:mobile`
+
+## Architecture Summary
+
+- Next.js monolith with modular domain APIs
+- Prisma model layer supports strict org isolation
+- Role + membership checks enforced in API + resource routes
+- Operations logic separated in `src/lib/ops.ts` for readiness scoring and dispatch helpers
+- Seed script creates realistic Cumbria operational data for investor/demo narrative
+
+## Assumptions
+
+- MVP uses deterministic internal AI triage and no external LLM provider
+- Payment processing is mock/invoice-state based (no live gateway)
+- Scanner workflow supports code entry + placeholders; hardware scanning can be integrated later
+- Map routing uses seeded route points and periodic position updates

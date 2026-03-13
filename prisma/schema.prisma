@@ -28,11 +28,14 @@ enum JobUrgency {
 
 enum JobStatus {
   LEAD
+  INCOMING_REQUEST
+  UNDER_REVIEW
   ESTIMATE_DRAFTED
   ESTIMATE_SENT
   ESTIMATE_APPROVED
   SCHEDULED
   TECHNICIAN_ASSIGNED
+  VAN_ASSIGNED
   IN_PROGRESS
   AWAITING_MATERIALS
   COMPLETED
@@ -41,6 +44,8 @@ enum JobStatus {
   PAID
   WARRANTY_FOLLOW_UP
   CANCELLED
+  REJECTED
+  AWAITING_CUSTOMER_RESPONSE
 }
 
 enum VanStatus {
@@ -111,13 +116,48 @@ enum VatPeriodStatus {
 
 enum AttachmentEntityType {
   JOB
+  JOB_REQUEST
   ESTIMATE
   INVOICE
   RECEIPT
   BRANDING
   CHAT
   PROPERTY
+  PRODUCT
+  ASSET
   OTHER
+}
+
+enum JobRequestStatus {
+  NEW
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+  MORE_INFO_REQUESTED
+  ESTIMATE_REQUIRED
+  READY_TO_SCHEDULE
+  EMERGENCY_DISPATCHED
+  SCHEDULED
+}
+
+enum SupplyMethod {
+  CONTRACTOR_SUPPLY
+  CUSTOMER_SUPPLY
+  MARKETPLACE
+}
+
+enum SlaState {
+  SAFE
+  AT_RISK
+  CRITICAL
+  BREACHED
+}
+
+enum AssetStatus {
+  ACTIVE
+  FAULTY
+  REPLACED
+  REMOVED
 }
 
 model User {
@@ -147,17 +187,21 @@ model User {
   invitedMemberships  MembershipInvite[]   @relation("Invitee")
   statusChanges       JobStatusHistory[]   @relation("StatusChangedBy")
   stockMovements      StockMovement[]      @relation("StockPerformedBy")
+  reviewedJobRequests JobRequest[]         @relation("RequestReviewedBy")
+  uploadedAssetDocs   AssetDocument[]      @relation("AssetDocumentUploader")
+  uploadedAssetPhotos AssetPhoto[]         @relation("AssetPhotoUploader")
+  assetStatusChanges  AssetStatusHistory[] @relation("AssetStatusChangedBy")
   passwordResetTokens PasswordResetToken[]
 }
 
 model Organisation {
-  id                 String              @id @default(cuid())
+  id                 String               @id @default(cuid())
   name               String
-  slug               String              @unique
-  timezone           String              @default("Europe/London")
-  onboardingComplete Boolean             @default(false)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  slug               String               @unique
+  timezone           String               @default("Europe/London")
+  onboardingComplete Boolean              @default(false)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
   branding           ContractorBranding?
   memberships        Membership[]
   invites            MembershipInvite[]
@@ -166,17 +210,28 @@ model Organisation {
   technicians        Technician[]
   vans               Van[]
   vanLocations       VanLocation[]
+  depots             Depot[]
   racks              Rack[]
   slots              Slot[]
   suppliers          Supplier[]
   inventoryItems     InventoryItem[]
   stockMovements     StockMovement[]
   jobs               Job[]
+  jobRequests        JobRequest[]
+  jobRequestProducts JobRequestProduct[]
   jobMaterials       JobMaterial[]
   estimates          Estimate[]
   invoices           Invoice[]
   subscriptions      Subscription[]
   subscriptionPlans  SubscriptionPlan[]
+  productCategories  ProductCategory[]
+  products           Product[]
+  productSources     ProductSource[]
+  markupRules        CompanyMarkupRule[]
+  propertyAssets     PropertyAsset[]
+  assetDocuments     AssetDocument[]
+  assetPhotos        AssetPhoto[]
+  assetStatusHistory AssetStatusHistory[]
   chatThreads        ChatThread[]
   chatMessages       ChatMessage[]
   notifications      Notification[]
@@ -242,30 +297,32 @@ model ContractorBranding {
 }
 
 model Customer {
-  id             String         @id @default(cuid())
+  id             String          @id @default(cuid())
   organisationId String
-  userId         String?        @unique
+  userId         String?         @unique
   displayName    String
   email          String
   phone          String?
-  isSubscriber   Boolean        @default(false)
+  isSubscriber   Boolean         @default(false)
   notes          String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  organisation   Organisation   @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-  user           User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  organisation   Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  user           User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
   properties     Property[]
   jobs           Job[]
+  jobRequests    JobRequest[]
   estimates      Estimate[]
   invoices       Invoice[]
   subscriptions  Subscription[]
+  propertyAssets PropertyAsset[]
   chatThreads    ChatThread[]
 
   @@index([organisationId, email])
 }
 
 model Property {
-  id                 String       @id @default(cuid())
+  id                 String          @id @default(cuid())
   organisationId     String
   customerId         String
   label              String?
@@ -273,45 +330,49 @@ model Property {
   addressLine2       String?
   city               String
   postcode           String
-  country            String       @default("UK")
+  country            String          @default("UK")
   latitude           Float?
   longitude          Float?
   notes              String?
   installedEquipment Json?
   warrantyNotes      String?
   complianceDocs     Json?
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
-  organisation       Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-  customer           Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  organisation       Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  customer           Customer        @relation(fields: [customerId], references: [id], onDelete: Cascade)
   jobs               Job[]
+  jobRequests        JobRequest[]
   estimates          Estimate[]
   invoices           Invoice[]
+  assets             PropertyAsset[]
 
   @@index([organisationId, customerId])
 }
 
 model Technician {
-  id             String       @id @default(cuid())
-  organisationId String
-  userId         String?      @unique
-  displayName    String
-  email          String?
-  phone          String?
-  status         String       @default("ACTIVE")
-  skills         Json?
-  baseLocation   String?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  assignedVans   Van[]        @relation("VanTechnician")
-  jobs           Job[]
+  id              String          @id @default(cuid())
+  organisationId  String
+  userId          String?         @unique
+  displayName     String
+  email           String?
+  phone           String?
+  status          String          @default("ACTIVE")
+  skills          Json?
+  baseLocation    String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  organisation    Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  user            User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  assignedVans    Van[]           @relation("VanTechnician")
+  jobs            Job[]
+  installedAssets PropertyAsset[] @relation("AssetInstalledBy")
 }
 
 model Van {
   id                   String          @id @default(cuid())
   organisationId       String
+  depotId              String?
   name                 String
   registration         String
   identifier           String
@@ -324,6 +385,7 @@ model Van {
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
   organisation         Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  depot                Depot?          @relation("DepotVans", fields: [depotId], references: [id], onDelete: SetNull)
   assignedTechnician   Technician?     @relation("VanTechnician", fields: [assignedTechnicianId], references: [id], onDelete: SetNull)
   racks                Rack[]
   locations            VanLocation[]
@@ -331,6 +393,29 @@ model Van {
   inventoryItems       InventoryItem[]
 
   @@unique([organisationId, registration])
+}
+
+model Depot {
+  id             String          @id @default(cuid())
+  organisationId String
+  name           String
+  code           String
+  addressLine1   String
+  addressLine2   String?
+  city           String
+  postcode       String
+  latitude       Float?
+  longitude      Float?
+  isPrimary      Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  organisation   Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  vans           Van[]           @relation("DepotVans")
+  inventoryItems InventoryItem[]
+  stockFromMoves StockMovement[] @relation("StockFromDepot")
+  stockToMoves   StockMovement[] @relation("StockToDepot")
+
+  @@unique([organisationId, code])
 }
 
 model VanLocation {
@@ -394,11 +479,13 @@ model Supplier {
   organisation   Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   inventoryItems InventoryItem[]
   expenses       Expense[]
+  productSources ProductSource[]
 }
 
 model InventoryItem {
   id             String          @id @default(cuid())
   organisationId String
+  depotId        String?
   vanId          String?
   rackId         String?
   slotId         String?
@@ -416,6 +503,7 @@ model InventoryItem {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   organisation   Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  depot          Depot?          @relation(fields: [depotId], references: [id], onDelete: SetNull)
   van            Van?            @relation(fields: [vanId], references: [id], onDelete: SetNull)
   rack           Rack?           @relation(fields: [rackId], references: [id], onDelete: SetNull)
   slot           Slot?           @relation(fields: [slotId], references: [id], onDelete: SetNull)
@@ -423,7 +511,7 @@ model InventoryItem {
   stockMovements StockMovement[]
   jobMaterials   JobMaterial[]
 
-  @@unique([organisationId, sku])
+  @@index([organisationId, sku])
   @@index([organisationId, barcode])
 }
 
@@ -432,6 +520,8 @@ model StockMovement {
   organisationId  String
   inventoryItemId String
   jobId           String?
+  fromDepotId     String?
+  toDepotId       String?
   fromSlotId      String?
   toSlotId        String?
   performedById   String?
@@ -443,9 +533,13 @@ model StockMovement {
   organisation    Organisation      @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   inventoryItem   InventoryItem     @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
   job             Job?              @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  fromDepot       Depot?            @relation("StockFromDepot", fields: [fromDepotId], references: [id], onDelete: SetNull)
+  toDepot         Depot?            @relation("StockToDepot", fields: [toDepotId], references: [id], onDelete: SetNull)
   fromSlot        Slot?             @relation("StockFromSlot", fields: [fromSlotId], references: [id], onDelete: SetNull)
   toSlot          Slot?             @relation("StockToSlot", fields: [toSlotId], references: [id], onDelete: SetNull)
   performedBy     User?             @relation("StockPerformedBy", fields: [performedById], references: [id], onDelete: SetNull)
+
+  @@index([organisationId, createdAt])
 }
 
 model Job {
@@ -461,6 +555,8 @@ model Job {
   urgency                  JobUrgency         @default(MEDIUM)
   status                   JobStatus          @default(LEAD)
   isEmergency              Boolean            @default(false)
+  supplyMethod             SupplyMethod       @default(CONTRACTOR_SUPPLY)
+  slaState                 SlaState           @default(SAFE)
   source                   String             @default("MANUAL")
   scheduledAt              DateTime?
   startedAt                DateTime?
@@ -473,6 +569,7 @@ model Job {
   createdAt                DateTime           @default(now())
   updatedAt                DateTime           @updatedAt
   organisation             Organisation       @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  jobRequest               JobRequest?        @relation("JobRequestLinked")
   customer                 Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
   property                 Property           @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   technician               Technician?        @relation(fields: [technicianId], references: [id], onDelete: SetNull)
@@ -484,9 +581,62 @@ model Job {
   chatThread               ChatThread?
   stockMovements           StockMovement[]
   aiInteractions           AiInteraction[]
+  installedAssets          PropertyAsset[]    @relation("JobInstalledAssets")
 
   @@index([organisationId, status])
   @@index([customerId])
+}
+
+model JobRequest {
+  id                   String              @id @default(cuid())
+  organisationId       String
+  customerId           String
+  propertyId           String
+  linkedJobId          String?             @unique
+  title                String
+  serviceType          String
+  description          String
+  urgency              JobUrgency          @default(MEDIUM)
+  status               JobRequestStatus    @default(NEW)
+  supplyMethod         SupplyMethod        @default(CONTRACTOR_SUPPLY)
+  isEmergency          Boolean             @default(false)
+  subscriberPriority   Boolean             @default(false)
+  aiSummary            String?
+  aiConfidence         Decimal?            @db.Decimal(5, 2)
+  suggestedUrgency     JobUrgency?
+  suggestedServiceType String?
+  suggestedMaterials   Json?
+  slaTargetAt          DateTime?
+  slaState             SlaState            @default(SAFE)
+  reviewNotes          String?
+  requestedAt          DateTime            @default(now())
+  reviewedAt           DateTime?
+  reviewedById         String?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  organisation         Organisation        @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  customer             Customer            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  property             Property            @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  linkedJob            Job?                @relation("JobRequestLinked", fields: [linkedJobId], references: [id], onDelete: SetNull)
+  reviewedBy           User?               @relation("RequestReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  selectedProducts     JobRequestProduct[]
+
+  @@index([organisationId, status, requestedAt])
+}
+
+model JobRequestProduct {
+  id             String       @id @default(cuid())
+  organisationId String
+  requestId      String
+  productId      String
+  quantity       Int          @default(1)
+  note           String?
+  createdAt      DateTime     @default(now())
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  request        JobRequest   @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  product        Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([organisationId, requestId])
 }
 
 model JobStatusHistory {
@@ -506,6 +656,7 @@ model JobMaterial {
   organisationId  String
   jobId           String
   inventoryItemId String?
+  productId       String?
   description     String
   quantity        Decimal        @default(1) @db.Decimal(10, 2)
   unit            String         @default("pcs")
@@ -516,6 +667,7 @@ model JobMaterial {
   organisation    Organisation   @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   job             Job            @relation(fields: [jobId], references: [id], onDelete: Cascade)
   inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id], onDelete: SetNull)
+  product         Product?       @relation(fields: [productId], references: [id], onDelete: SetNull)
 }
 
 model Estimate {
@@ -542,6 +694,7 @@ model Estimate {
   customer        Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
   property        Property?          @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   lineItems       EstimateLineItem[]
+  propertyAssets  PropertyAsset[]
 
   @@unique([organisationId, number])
 }
@@ -549,6 +702,7 @@ model Estimate {
 model EstimateLineItem {
   id          String       @id @default(cuid())
   estimateId  String
+  productId   String?
   type        LineItemType
   description String
   quantity    Decimal      @default(1) @db.Decimal(10, 2)
@@ -558,6 +712,7 @@ model EstimateLineItem {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   estimate    Estimate     @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+  product     Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
 }
 
 model Invoice {
@@ -585,6 +740,7 @@ model Invoice {
   lineItems      InvoiceLineItem[]
   payments       MockPayment[]
   ledgerEntry    LedgerEntry?
+  propertyAssets PropertyAsset[]
 
   @@unique([organisationId, number])
 }
@@ -592,6 +748,7 @@ model Invoice {
 model InvoiceLineItem {
   id          String       @id @default(cuid())
   invoiceId   String
+  productId   String?
   type        LineItemType
   description String
   quantity    Decimal      @default(1) @db.Decimal(10, 2)
@@ -601,6 +758,7 @@ model InvoiceLineItem {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   invoice     Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product     Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
 }
 
 model MockPayment {
@@ -648,6 +806,186 @@ model Subscription {
   organisation   Organisation       @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   customer       Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
   plan           SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+}
+
+model ProductCategory {
+  id             String              @id @default(cuid())
+  organisationId String
+  name           String
+  slug           String
+  description    String?
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  organisation   Organisation        @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  products       Product[]
+  markupRules    CompanyMarkupRule[]
+
+  @@unique([organisationId, slug])
+}
+
+model Product {
+  id                  String              @id @default(cuid())
+  organisationId      String
+  categoryId          String
+  name                String
+  slug                String
+  description         String?
+  brand               String?
+  model               String?
+  finishColor         String?
+  dimensions          String?
+  specsJson           Json?
+  imagePath           String?
+  sourceCost          Decimal             @default(0) @db.Decimal(12, 2)
+  contractorSellPrice Decimal             @default(0) @db.Decimal(12, 2)
+  vatRate             Decimal             @default(20) @db.Decimal(5, 2)
+  availabilityStatus  String              @default("IN_STOCK")
+  active              Boolean             @default(true)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  organisation        Organisation        @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  category            ProductCategory     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  sources             ProductSource[]
+  markupRules         CompanyMarkupRule[]
+  requestSelections   JobRequestProduct[]
+  jobMaterials        JobMaterial[]
+  estimateLineItems   EstimateLineItem[]
+  invoiceLineItems    InvoiceLineItem[]
+  propertyAssets      PropertyAsset[]
+
+  @@unique([organisationId, slug])
+}
+
+model ProductSource {
+  id             String       @id @default(cuid())
+  organisationId String
+  productId      String
+  supplierId     String?
+  supplierName   String
+  supplierSku    String?
+  supplierUrl    String?
+  supplierCost   Decimal      @default(0) @db.Decimal(12, 2)
+  availability   String       @default("IN_STOCK")
+  sourceType     String       @default("SEED")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  product        Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supplier       Supplier?    @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+}
+
+model CompanyMarkupRule {
+  id               String           @id @default(cuid())
+  organisationId   String
+  categoryId       String?
+  productId        String?
+  ruleName         String
+  markupPct        Decimal          @default(0) @db.Decimal(6, 2)
+  minimumMarginPct Decimal          @default(0) @db.Decimal(6, 2)
+  roundingRule     String           @default("NEAREST_POUND")
+  labourBundlePct  Decimal?         @db.Decimal(6, 2)
+  isActive         Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  organisation     Organisation     @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  category         ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  product          Product?         @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([organisationId, isActive])
+}
+
+model PropertyAsset {
+  id                        String               @id @default(cuid())
+  organisationId            String
+  propertyId                String
+  customerId                String
+  productId                 String?
+  installedJobId            String?
+  estimateId                String?
+  invoiceId                 String?
+  installedByTechnicianId   String?
+  assetType                 String
+  name                      String
+  category                  String?
+  supplierName              String?
+  supplierSku               String?
+  brand                     String?
+  model                     String?
+  finishColor               String?
+  sourceCost                Decimal?             @db.Decimal(12, 2)
+  sellPrice                 Decimal?             @db.Decimal(12, 2)
+  installationDate          DateTime?
+  floor                     String?
+  room                      String?
+  zone                      String?
+  serialNumber              String?
+  warrantyStart             DateTime?
+  warrantyExpiry            DateTime?
+  expectedReplacementMonths Int?
+  status                    AssetStatus          @default(ACTIVE)
+  notes                     String?
+  createdAt                 DateTime             @default(now())
+  updatedAt                 DateTime             @updatedAt
+  organisation              Organisation         @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  property                  Property             @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  customer                  Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product                   Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
+  installedJob              Job?                 @relation("JobInstalledAssets", fields: [installedJobId], references: [id], onDelete: SetNull)
+  estimate                  Estimate?            @relation(fields: [estimateId], references: [id], onDelete: SetNull)
+  invoice                   Invoice?             @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  installedBy               Technician?          @relation("AssetInstalledBy", fields: [installedByTechnicianId], references: [id], onDelete: SetNull)
+  documents                 AssetDocument[]
+  photos                    AssetPhoto[]
+  history                   AssetStatusHistory[]
+
+  @@index([organisationId, propertyId])
+}
+
+model AssetDocument {
+  id             String        @id @default(cuid())
+  organisationId String
+  assetId        String
+  fileName       String
+  filePath       String
+  mimeType       String?
+  sizeBytes      Int?
+  uploadedById   String?
+  createdAt      DateTime      @default(now())
+  organisation   Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  asset          PropertyAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  uploadedBy     User?         @relation("AssetDocumentUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+}
+
+model AssetPhoto {
+  id             String        @id @default(cuid())
+  organisationId String
+  assetId        String
+  fileName       String
+  filePath       String
+  mimeType       String?
+  sizeBytes      Int?
+  uploadedById   String?
+  createdAt      DateTime      @default(now())
+  organisation   Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  asset          PropertyAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  uploadedBy     User?         @relation("AssetPhotoUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+}
+
+model AssetStatusHistory {
+  id             String        @id @default(cuid())
+  organisationId String
+  assetId        String
+  fromStatus     AssetStatus?
+  toStatus       AssetStatus
+  note           String?
+  changedById    String?
+  createdAt      DateTime      @default(now())
+  organisation   Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  asset          PropertyAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  changedBy      User?         @relation("AssetStatusChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([organisationId, createdAt])
 }
 
 model ChatThread {

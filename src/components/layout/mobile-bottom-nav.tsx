@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, MessageSquare, Package, Wrench } from "lucide-react";
+import { Home, MessageSquare, Package, ShoppingBag, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEM_SETS = {
@@ -15,6 +15,8 @@ const ITEM_SETS = {
   customer: [
     { href: "/customer", label: "Home", icon: Home },
     { href: "/customer/jobs", label: "Jobs", icon: Wrench },
+    { href: "/customer/marketplace", label: "Market", icon: ShoppingBag },
+    { href: "/customer/assets", label: "Assets", icon: Package },
     { href: "/customer/invoices", label: "Invoices", icon: Package },
     { href: "/customer/chat", label: "Chat", icon: MessageSquare },
   ],
@@ -24,7 +26,10 @@ export function MobileBottomNav({ type }: { type: "technician" | "customer" }) {
   const pathname = usePathname();
   const items = ITEM_SETS[type];
   return (
-    <nav className="fixed bottom-0 left-0 z-40 grid w-full grid-cols-4 border-t border-slate-200 bg-white lg:hidden">
+    <nav
+      className="fixed bottom-0 left-0 z-40 grid w-full border-t border-white/15 bg-slate-950/95 backdrop-blur lg:hidden"
+      style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
+    >
       {items.map((item) => {
         const Icon = item.icon;
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -34,7 +39,7 @@ export function MobileBottomNav({ type }: { type: "technician" | "customer" }) {
             href={item.href}
             className={cn(
               "flex flex-col items-center gap-1 px-2 py-2 text-xs",
-              active ? "text-tf-electric" : "text-slate-600",
+              active ? "text-tf-electric" : "text-slate-400",
             )}
           >
             <Icon className="h-4 w-4" />

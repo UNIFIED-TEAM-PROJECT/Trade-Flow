@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { requireSession } from "@/lib/server-session";
 
@@ -12,17 +13,19 @@ export default async function TechnicianLayout({ children }: { children: React.R
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white">
+    <div className="min-h-screen bg-[#040812] pb-20 text-slate-100">
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3">
-          <img
+          <Image
             src="/branding/tradesflow_svg_bundle/tradesflow-icon-only.svg"
             alt="TradesFlow"
             className="h-8 w-8"
+            width={32}
+            height={32}
           />
           <div>
-            <p className="font-display text-lg font-semibold">Technician Workspace</p>
-            <p className="text-xs text-slate-500">Mobile-first field operations view</p>
+            <p className="font-display text-lg font-semibold text-slate-100">Technician Workspace</p>
+            <p className="text-xs text-slate-400">Mobile-first field operations view</p>
           </div>
         </div>
       </header>

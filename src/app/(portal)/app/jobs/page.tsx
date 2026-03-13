@@ -1,4 +1,5 @@
 import { JobOperationsPanel } from "@/components/modules/job-operations";
+import { IncomingRequestsBoard } from "@/components/modules/incoming-requests-board";
 import { PageHeading } from "@/components/modules/page-heading";
 import { ResourceManager } from "@/components/modules/resource-manager";
 
@@ -7,12 +8,14 @@ export default function JobsPage() {
     <div className="space-y-6">
       <PageHeading
         title="Job Management"
-        description="Track full job lifecycle from intake and estimate through completion, invoice, and warranty follow-up."
+        description="Run intake review, accept/assign workflow, technician execution, invoice handoff, and warranty follow-up."
       />
+      <IncomingRequestsBoard />
       <JobOperationsPanel />
       <ResourceManager
         title="Jobs"
         endpoint="jobs"
+        subtitle="Operational job table with lifecycle states and assignment references."
         fields={[
           { name: "customerId", label: "Customer ID", required: true },
           { name: "propertyId", label: "Property ID", required: true },

@@ -1,3 +1,5 @@
+import { FleetAvailabilityPanel } from "@/components/modules/fleet-availability-panel";
+import { FleetMapPanel } from "@/components/modules/fleet-map-panel";
 import { PageHeading } from "@/components/modules/page-heading";
 import { ResourceManager } from "@/components/modules/resource-manager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,8 +9,10 @@ export default function FleetPage() {
     <div className="space-y-6">
       <PageHeading
         title="Fleet Management"
-        description="Manage van profiles, assignments, route placeholders, rack layouts, and fleet readiness."
+        description="Live fleet allocation with route order, incoming request proximity, and stock-readiness context."
       />
+      <FleetAvailabilityPanel />
+      <FleetMapPanel />
       <div className="grid gap-4 xl:grid-cols-2">
         <ResourceManager
           title="Vans"
@@ -43,11 +47,11 @@ export default function FleetPage() {
           { name: "notes", label: "Notes", type: "textarea" },
         ]}
       />
-      <Card>
-        <CardHeader>
-          <CardTitle>Map & Allocation Placeholder</CardTitle>
+      <Card className="border-white/15 bg-slate-950/80">
+        <CardHeader className="border-b border-white/10">
+          <CardTitle className="text-white">Map & Allocation Layer</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-sm text-slate-600">
+        <CardContent className="space-y-2 text-sm text-slate-300">
           <p>Map integration is abstracted for future provider plugins (Google, Mapbox, or OpenStreetMap).</p>
           <p>Current MVP uses internal proximity logic from stored van coordinates and job locations.</p>
           <p>

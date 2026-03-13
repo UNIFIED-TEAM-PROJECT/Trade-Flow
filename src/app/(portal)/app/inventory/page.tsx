@@ -1,4 +1,5 @@
 import { InventoryTools } from "@/components/modules/inventory-tools";
+import { InventoryLogisticsPanel } from "@/components/modules/inventory-logistics-panel";
 import { PageHeading } from "@/components/modules/page-heading";
 import { ResourceManager } from "@/components/modules/resource-manager";
 
@@ -7,9 +8,10 @@ export default function InventoryPage() {
     <div className="space-y-6">
       <PageHeading
         title="Inventory Control"
-        description="Van-level inventory with racks/slots, supplier links, reorder thresholds, and stock movement history."
+        description="Depot-to-van logistics, slot-based rack mapping, transfer workflows, and auditable stock movements."
       />
       <InventoryTools />
+      <InventoryLogisticsPanel />
       <div className="grid gap-4 xl:grid-cols-2">
         <ResourceManager
           title="Inventory Items"
@@ -29,7 +31,7 @@ export default function InventoryPage() {
         <ResourceManager
           title="Stock Movements"
           endpoint="stock-movements"
-          subtitle="IN / OUT / TRANSFER actions captured for audit and valuation."
+          subtitle="Raw movement records (IN / OUT / TRANSFER / ADJUSTMENT) for operational audits."
           fields={[
             { name: "inventoryItemId", label: "Inventory Item ID", required: true },
             { name: "type", label: "Movement Type", required: true },

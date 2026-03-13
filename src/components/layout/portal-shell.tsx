@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  Boxes,
   BarChart3,
   Building2,
   Bot,
@@ -10,6 +12,8 @@ import {
   ClipboardList,
   CreditCard,
   LayoutDashboard,
+  LifeBuoy,
+  MapPinned,
   Menu,
   MessageSquare,
   Package,
@@ -33,6 +37,8 @@ type PortalUser = {
 
 const NAV_ITEMS = [
   { href: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["OWNER", "MANAGER", "TECHNICIAN"] },
+  { href: "/app/dispatch", label: "Dispatch", icon: MapPinned, roles: ["OWNER", "MANAGER"] },
+  { href: "/app/incoming", label: "Incoming", icon: LifeBuoy, roles: ["OWNER", "MANAGER", "TECHNICIAN"] },
   { href: "/app/customers", label: "Customers", icon: Users, roles: ["OWNER", "MANAGER"] },
   { href: "/app/properties", label: "Properties", icon: Building2, roles: ["OWNER", "MANAGER"] },
   { href: "/app/jobs", label: "Jobs", icon: ClipboardList, roles: ["OWNER", "MANAGER", "TECHNICIAN"] },
@@ -44,6 +50,8 @@ const NAV_ITEMS = [
   { href: "/app/chat", label: "Chat", icon: MessageSquare, roles: ["OWNER", "MANAGER", "TECHNICIAN"] },
   { href: "/app/accounting", label: "Accounting", icon: Calculator, roles: ["OWNER", "MANAGER"] },
   { href: "/app/analytics", label: "Analytics", icon: BarChart3, roles: ["OWNER", "MANAGER"] },
+  { href: "/app/marketplace", label: "Marketplace", icon: Boxes, roles: ["OWNER", "MANAGER"] },
+  { href: "/app/assets", label: "Assets", icon: Building2, roles: ["OWNER", "MANAGER", "TECHNICIAN"] },
   { href: "/app/assistant", label: "AI Assistant", icon: Bot, roles: ["OWNER", "MANAGER", "TECHNICIAN"] },
   { href: "/app/settings", label: "Settings", icon: Settings, roles: ["OWNER", "MANAGER"] },
 ];
@@ -79,13 +87,15 @@ export function PortalShell({
   const filtered = NAV_ITEMS.filter((item) => user.role && item.roles.includes(user.role));
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="fixed left-0 top-0 z-20 hidden h-screen w-72 bg-gradient-to-b from-tf-navy via-[#0B1B3A] to-[#09152C] p-5 text-white lg:block">
+    <div className="min-h-screen bg-[#040812] text-slate-100">
+      <div className="fixed left-0 top-0 z-20 hidden h-screen w-72 border-r border-white/10 bg-gradient-to-b from-[#081a2f] via-[#0a2040] to-[#081425] p-5 text-white lg:block">
         <div className="mb-6 border-b border-white/20 pb-4">
-          <img
+          <Image
             src="/branding/tradesflow_svg_bundle/tradesflow-logo-horizontal-light.svg"
             alt="TradesFlow"
             className="h-10 w-auto"
+            width={220}
+            height={40}
           />
         </div>
         <nav className="space-y-1">
@@ -112,24 +122,24 @@ export function PortalShell({
         </div>
       </div>
 
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur lg:ml-72">
+      <header className="sticky top-0 z-10 border-b border-white/10 bg-slate-950/80 backdrop-blur lg:ml-72">
         <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-4 lg:px-6">
           <button
             onClick={toggleMobileNav}
-            className="rounded-md border border-slate-200 p-2 text-slate-700 lg:hidden"
+            className="rounded-md border border-white/20 p-2 text-slate-200 lg:hidden"
             aria-label="Toggle menu"
           >
             <Menu className="h-4 w-4" />
           </button>
           <div className="flex items-center gap-3">
-            <span className="rounded-full bg-tf-orange/15 px-3 py-1 text-xs font-medium text-tf-orange">
+            <span className="rounded-full border border-tf-orange/40 bg-tf-orange/15 px-3 py-1 text-xs font-medium text-tf-orange">
               TradesFlow MVP
             </span>
-            <span className="hidden text-sm text-slate-600 sm:inline">Operational OS for field service teams</span>
+            <span className="hidden text-sm text-slate-300 sm:inline">Operational OS for field service teams</span>
           </div>
           <div className="text-right text-sm">
-            <p className="font-medium text-slate-900">{`${user.firstName} ${user.lastName}`}</p>
-            <p className="text-xs uppercase tracking-wide text-slate-500">{user.role ?? "USER"}</p>
+            <p className="font-medium text-slate-100">{`${user.firstName} ${user.lastName}`}</p>
+            <p className="text-xs uppercase tracking-wide text-slate-400">{user.role ?? "USER"}</p>
           </div>
         </div>
       </header>
@@ -147,15 +157,17 @@ export function PortalShell({
       />
       <div
         className={cn(
-          "fixed left-0 top-0 z-40 h-full w-72 bg-gradient-to-b from-tf-navy via-[#0B1B3A] to-[#09152C] p-5 text-white shadow-xl transition lg:hidden",
+          "fixed left-0 top-0 z-40 h-full w-72 bg-gradient-to-b from-[#081a2f] via-[#0a2040] to-[#081425] p-5 text-white shadow-xl transition lg:hidden",
           mobileNavOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="mb-6 flex items-center justify-between border-b border-white/20 pb-4">
-          <img
+          <Image
             src="/branding/tradesflow_svg_bundle/tradesflow-logo-horizontal-light.svg"
             alt="TradesFlow"
             className="h-8 w-auto"
+            width={180}
+            height={32}
           />
           <button onClick={closeMobileNav} aria-label="Close menu">
             <X className="h-5 w-5" />

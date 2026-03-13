@@ -20,8 +20,8 @@ export function MetricCard({
       )}
     >
       <CardContent className="space-y-2 p-4">
-        <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
-        <p className="font-display text-2xl font-semibold text-slate-900">{value}</p>
+        <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
+        <p className="font-display text-2xl font-semibold text-white">{value}</p>
       </CardContent>
     </Card>
   );

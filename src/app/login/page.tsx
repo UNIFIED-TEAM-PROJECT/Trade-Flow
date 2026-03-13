@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -50,10 +51,12 @@ export default function LoginPage() {
       <section className="relative hidden bg-hero p-10 text-white lg:flex lg:flex-col lg:justify-between">
         <div className="absolute inset-0 bg-noise opacity-40" />
         <div className="relative z-10">
-          <img
+          <Image
             src="/branding/tradesflow_svg_bundle/tradesflow-logo-horizontal-light.svg"
             alt="TradesFlow"
             className="h-12 w-auto"
+            width={240}
+            height={48}
           />
         </div>
         <div className="relative z-10 space-y-5">
@@ -67,36 +70,40 @@ export default function LoginPage() {
         </div>
       </section>
 
-      <section className="flex items-center justify-center bg-slate-50 p-6">
-        <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-7 shadow-panel">
+      <section className="flex items-center justify-center bg-[#040812] p-6">
+        <div className="w-full max-w-md rounded-2xl border border-white/15 bg-slate-950/80 p-7 shadow-panel">
           <div className="mb-6 text-center lg:text-left">
-            <img
-              src="/branding/tradesflow_svg_bundle/tradesflow-logo-horizontal-dark.svg"
+            <Image
+              src="/branding/tradesflow_svg_bundle/tradesflow-logo-horizontal-light.svg"
               alt="TradesFlow"
               className="mx-auto h-10 w-auto lg:mx-0"
+              width={200}
+              height={40}
             />
-            <h2 className="mt-4 font-display text-2xl font-semibold text-slate-900">Welcome back</h2>
-            <p className="mt-1 text-sm text-slate-500">Sign in to your TradesFlow workspace.</p>
+            <h2 className="mt-4 font-display text-2xl font-semibold text-slate-100">Welcome back</h2>
+            <p className="mt-1 text-sm text-slate-400">Sign in to your TradesFlow workspace.</p>
           </div>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <label className="space-y-1 text-sm text-slate-700">
+            <label className="space-y-1 text-sm text-slate-300">
               <span>Email</span>
               <Input
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 type="email"
                 autoComplete="email"
+                className="bg-slate-900 text-white"
                 required
               />
             </label>
-            <label className="space-y-1 text-sm text-slate-700">
+            <label className="space-y-1 text-sm text-slate-300">
               <span>Password</span>
               <Input
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 type="password"
                 autoComplete="current-password"
+                className="bg-slate-900 text-white"
                 required
               />
             </label>
@@ -107,7 +114,7 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-5 flex flex-col gap-2 text-sm text-slate-600">
+          <div className="mt-5 flex flex-col gap-2 text-sm text-slate-400">
             <Link href="/signup" className="text-tf-electric hover:underline">
               Create contractor account
             </Link>

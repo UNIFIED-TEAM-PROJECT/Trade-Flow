@@ -22,6 +22,19 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       organisationId: ctx.organisationId,
       ...(ctx.role === MembershipRole.TECHNICIAN ? { technician: { userId: ctx.userId } } : {}),
     },
+    include: {
+      jobRequest: {
+        include: {
+          selectedProducts: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      },
+      customer: true,
+      property: true,
+    },
   });
 
   if (!job) {
@@ -50,6 +63,59 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         note,
       },
     });
+
+    if (status === JobStatus.COMPLETED && job.jobRequest?.selectedProducts?.length) {
+      for (const selected of job.jobRequest.selectedProducts) {
+        const existing = await tx.propertyAsset.findFirst({
+          where: {
+            organisationId: job.organisationId,
+            installedJobId: job.id,
+            productId: selected.productId,
+          },
+        });
+        if (existing) {
+          continue;
+        }
+        const warrantyStart = new Date();
+        const warrantyExpiry = new Date(warrantyStart);
+        warrantyExpiry.setFullYear(warrantyExpiry.getFullYear() + 2);
+
+        const asset = await tx.propertyAsset.create({
+          data: {
+            organisationId: job.organisationId,
+            propertyId: job.propertyId,
+            customerId: job.customerId,
+            productId: selected.productId,
+            installedJobId: job.id,
+            installedByTechnicianId: job.technicianId ?? null,
+            assetType: selected.product.categoryId,
+            name: selected.product.name,
+            category: selected.product.categoryId,
+            supplierName: "Marketplace selection",
+            sourceCost: selected.product.sourceCost,
+            sellPrice: selected.product.contractorSellPrice,
+            installationDate: new Date(),
+            room: "Not set",
+            status: "ACTIVE",
+            warrantyStart,
+            warrantyExpiry,
+            expectedReplacementMonths: 84,
+            notes: "Created automatically from completed job workflow.",
+          },
+        });
+
+        await tx.assetStatusHistory.create({
+          data: {
+            organisationId: job.organisationId,
+            assetId: asset.id,
+            fromStatus: null,
+            toStatus: "ACTIVE",
+            changedById: ctx.userId,
+            note: "Asset created on job completion.",
+          },
+        });
+      }
+    }
     return next;
   });
 
